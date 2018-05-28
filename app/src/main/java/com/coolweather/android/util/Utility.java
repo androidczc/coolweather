@@ -1,11 +1,14 @@
 package com.coolweather.android.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.County;
 import com.coolweather.android.db.Province;
+import com.coolweather.android.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 
@@ -18,15 +21,16 @@ import org.json.JSONObject;
 public class Utility {
 
     /**
-     *   解析和处理服务器返回的省级数据
-     * @param response  服务器返回的数据
-     * @return  请求的数据是否为空
+     * 解析和处理服务器返回的省级数据
+     *
+     * @param response 服务器返回的数据
+     * @return 请求的数据是否为空
      */
-    public  static  boolean handleProvinceResponse(String response){
-        if (!TextUtils.isEmpty(response)){
-            try{
+    public static boolean handleProvinceResponse(String response) {
+        if (!TextUtils.isEmpty(response)) {
+            try {
                 JSONArray allProvince = new JSONArray(response);
-                for (int i=0;i<allProvince.length();i++){
+                for (int i = 0; i < allProvince.length(); i++) {
                     JSONObject provinceObject = allProvince.getJSONObject(i);
                     Province province = new Province();
                     province.setProvinceName(provinceObject.getString("name"));
@@ -34,23 +38,24 @@ public class Utility {
                     province.save();
                 }
                 return true;
+            } catch (JSONException e) {
             }
-            catch (JSONException e){}
         }
-        return  false;
+        return false;
     }
 
     /**
      * 解析和处理服务器返回的市级数据
-     * @param response 服务器返回的数据
-     * @param provinceId  省的id
-     * @return  服务器返回的数据是否为空
+     *
+     * @param response   服务器返回的数据
+     * @param provinceId 省的id
+     * @return 服务器返回的数据是否为空
      */
-    public static boolean handleCityResponse(String response,int provinceId){
-        if (!TextUtils.isEmpty(response)){
+    public static boolean handleCityResponse(String response, int provinceId) {
+        if (!TextUtils.isEmpty(response)) {
             try {
                 JSONArray allCities = new JSONArray(response);
-                for (int i = 0;i<allCities.length();i++){
+                for (int i = 0; i < allCities.length(); i++) {
                     JSONObject cityObject = allCities.getJSONObject(i);
                     City city = new City();
                     city.setCityName(cityObject.getString("name"));
@@ -63,21 +68,22 @@ public class Utility {
                 e.printStackTrace();
             }
         }
-        return  false;
+        return false;
     }
 
 
     /**
      * 解析和处理服务器返回的县级数据
-     * @param response  服务器返回的数据
-     * @param cityId  cityId
-     * @return  服务器返回的数据是否为空
+     *
+     * @param response 服务器返回的数据
+     * @param cityId   cityId
+     * @return 服务器返回的数据是否为空
      */
-    public static  boolean handleCountyResponse(String response,int cityId){
-        if (!TextUtils.isEmpty(response)){
+    public static boolean handleCountyResponse(String response, int cityId) {
+        if (!TextUtils.isEmpty(response)) {
             try {
-                JSONArray allCounties =new JSONArray(response);
-                for (int i=0;i<allCounties.length();i++){
+                JSONArray allCounties = new JSONArray(response);
+                for (int i = 0; i < allCounties.length(); i++) {
                     JSONObject countyObject = allCounties.getJSONObject(i);
                     County county = new County();
                     county.setCountyName(countyObject.getString("name"));
@@ -91,5 +97,25 @@ public class Utility {
             }
         }
         return false;
+    }
+
+
+    /**
+     * 将返回的JSON数据解析成weather实体类
+     *
+     * @param response response
+     * @return Weather
+     */
+    public static Weather handleWeatherResponse(String response) {
+        try {
+            Log.i("handleWeatherResponse", response);
+            JSONObject object = new JSONObject(response);
+            JSONArray jsonArray = object.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
